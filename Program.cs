@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Data;
 using System.Reflection.Metadata.Ecma335;
 
 namespace Wordle
@@ -12,6 +13,7 @@ namespace Wordle
         }
 		static void Main(string[] arg)
 		{
+			Boot();
 			Start();
 		}
 
@@ -40,11 +42,35 @@ namespace Wordle
             }
         }
 
+		static void Boot()
+		{
+			String aa = "AugeAgora";
+			Console.BackgroundColor = ConsoleColor.DarkMagenta;
+			Console.ForegroundColor = ConsoleColor.White;
+			for (int i = 0; i < 9; i++)
+			{
+				Console.Write(aa[i]);
+				Thread.Sleep(100);
+			}
+            Thread.Sleep(200);
+            Console.ResetColor();
+			Console.Clear();
+		}
+
         static void Exit()
 		{
+			Console.Clear();
+            String aa = "Goodbye!";
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
+            Console.ForegroundColor = ConsoleColor.White;
+            for (int i = 0; i < 8; i++)
+            {
+                Console.Write(aa[i]);
+                Thread.Sleep(100);
+            }
+            Thread.Sleep(200);
+            Console.ResetColor();
             Console.Clear();
-            Console.WriteLine("Goodbye!");
-			Thread.Sleep(1000);
             Environment.Exit(1);
 		}
 
@@ -128,7 +154,7 @@ namespace Wordle
 		{
             Random random = new Random();
             int randomNumber = random.Next(0, 6);
-            string[] answerPool = { "stoat", "drunk", "boink", "furry", "goons", "funny" };
+            string[] answerPool = { "stoat", "drunk", "happy", "furry", "goons", "funny" };
             string randomAnswer = answerPool[randomNumber];
 			return randomAnswer;
         }
