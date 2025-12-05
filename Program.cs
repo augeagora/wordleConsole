@@ -1,8 +1,4 @@
-﻿using System.ComponentModel;
-using System.Data;
-using System.Reflection.Metadata.Ecma335;
-
-namespace Wordle
+﻿namespace Wordle
 {
 	class Program
 	{
@@ -10,6 +6,8 @@ namespace Wordle
 		{
 			public static bool[] correctGuess = new bool[5];
 			public static string ga;
+			public static int[] letterStatus = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+			public static char[] letters = { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm' };
         }
 		static void Main(string[] arg)
 		{
@@ -19,10 +17,9 @@ namespace Wordle
 
         static void Start()
         {
-			Console.BackgroundColor = ConsoleColor.Magenta;
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("Douglas's Wordle");
-            Console.WriteLine("v0.1");
+			Console.WriteLine("Douglas's Wordle v0.2 WIP");
             Console.ResetColor();
             Console.WriteLine("1 - Play");
             Console.WriteLine("0 - Exit");
@@ -87,8 +84,12 @@ namespace Wordle
 			{
 				GlobalVariables.correctGuess[i] = false;
 			}
+			for (int i = 0; i < GlobalVariables.letterStatus.Length; i++)
+			{
+				GlobalVariables.letterStatus[i] = 0;
+			}
 			GlobalVariables.ga = GenerateAnswer();
-			char[] answer = Answer();
+            char[] answer = Answer();
 			char[] validGuess;
 			Console.BackgroundColor = ConsoleColor.DarkYellow;
 			Console.ForegroundColor = ConsoleColor.White;
@@ -111,9 +112,12 @@ namespace Wordle
 				{
 					break;
 				}
+
                 answer = Answer(); // Reset each time
                 validGuess = GuessCheck();
+                Console.WriteLine("--------------------------");
                 Respond(validGuess, answer);
+				Letters();
 				guessesMade++;
             }
 			
@@ -186,6 +190,7 @@ namespace Wordle
 
 		static void Respond(char[] vg, char[] answer)
 		{
+			int index = 0;
 			for (int i = 0; i < 5; i++)
 			{
 				if (vg[i] == answer[i])
@@ -196,6 +201,16 @@ namespace Wordle
 					Console.ResetColor();
                     Console.Write(" ");
 					GlobalVariables.correctGuess[i] = true;
+
+					// This attrocity locates and sets the status of letters
+					for (int a = 0; a < GlobalVariables.letters.Length; a++)
+					{
+						if (GlobalVariables.letters[a] == vg[i])
+						{
+							index = a;
+						}
+					}
+					GlobalVariables.letterStatus[index] = 3;
                 }
 				else if (answer.Contains(vg[i]))
 				{
@@ -205,8 +220,18 @@ namespace Wordle
                     Console.ResetColor();
                     Console.Write(" ");
                     GlobalVariables.correctGuess[i] = false;
+
+                    // This attrocity locates and sets the status of letters
+                    for (int a = 0; a < GlobalVariables.letters.Length; a++)
+                    {
+                        if (GlobalVariables.letters[a] == vg[i])
+                        {
+                            index = a;
+                        }
+                    }
+                    GlobalVariables.letterStatus[index] = 2;
                 }
-				else
+				else if (answer.Contains(vg[i]) == false)
 				{
                     Console.BackgroundColor = ConsoleColor.Gray;
                     Console.ForegroundColor = ConsoleColor.Black;
@@ -214,12 +239,73 @@ namespace Wordle
                     Console.ResetColor();
                     Console.Write(" ");
                     GlobalVariables.correctGuess[i] = false;
+
+                    // This attrocity locates and sets the status of letters
+                    for (int a = 0; a < GlobalVariables.letters.Length; a++)
+                    {
+                        if (GlobalVariables.letters[a] == vg[i])
+                        {
+                            index = a;
+                        }
+                    }
+                    GlobalVariables.letterStatus[index] = 1;
                 }
                 // Changes the value in answer so that when checking if answer contains
                 // x char it doesn't say a char is within the array multiple times incorrectly.
                 answer[i] = '0';
+
+				// Ok so this is clearly messing my stuff up
+				// because let's say you guess drunk, and
+				// the answer is furry. The game wont register
+				// u as being somewhere in the word because
+				// by the time it gets to u the array is: 0, 0, r, r, y
 			}
-            Console.WriteLine();
+			Console.Write("<---- Your Guess");
+			Console.WriteLine();
+        }
+
+		static void Letters()
+		{
+			Console.WriteLine("--------------------------");
+			for (int i = 0; i < 26; i++)
+			{
+				if (i == 10) { Console.WriteLine(); }
+                if (i == 19) { 
+					Console.WriteLine();
+					Console.Write(" ");
+				}
+
+                if (GlobalVariables.letterStatus[i] == 0)
+				{
+                    Console.Write(GlobalVariables.letters[i]);
+                    Console.Write(" ");
+                }
+				else if (GlobalVariables.letterStatus[i] == 1)
+				{
+					Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(GlobalVariables.letters[i]);
+                    Console.ResetColor();
+					Console.Write(" ");
+                }
+				else if (GlobalVariables.letterStatus[i] == 2)
+				{
+                    Console.BackgroundColor = ConsoleColor.Yellow;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.Write(GlobalVariables.letters[i]);
+                    Console.ResetColor();
+                    Console.Write(" ");
+                }
+                else if (GlobalVariables.letterStatus[i] == 3)
+                {
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.Write(GlobalVariables.letters[i]);
+					Console.ResetColor();
+                    Console.Write(" ");
+                }
+            }
+            Console.WriteLine("\n--------------------------");
         }
 	}
 }
