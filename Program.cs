@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Media;
+using System.Runtime.InteropServices;
+
 
 Boot();
 Menu();
@@ -27,14 +29,21 @@ void Menu()
     if (selection == "0")
     {
         Console.Clear();
-        Console.WriteLine("Type your first guess!\n");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.Write("   ");
+        TitleColor("Start", "WRITELINE");
+        Reset();
+        Console.WriteLine("-----------");
         Play(devMode);
     }
 
     if (selection == "1")
     {
         Console.Clear();
-        Console.WriteLine("Type your first guess!");
+        Console.Write("   ");
+        TitleColor("{DEV}", "WRITELINE");
+        Reset();
+        Console.WriteLine("-----------");
         devMode = true;
         Play(devMode);
     }
@@ -52,6 +61,9 @@ void Play(bool devMode)
     List<string> wordList = GetWordList();
     String word = GetWord(wordList);
 
+    // Grab the virtual keyboard
+    var vk = VirtualKeyboardLetters();
+
     if (devMode) { DevComment($"The word is: {word}", "WRITELINE"); } //DM
     
 
@@ -65,18 +77,24 @@ void Play(bool devMode)
 
         // Let the user guess
         UserColor();
+        Console.Write("   "); // Add spaces to sort of center
         String guess = Console.ReadLine().ToLower();
-        // DevComment($"User's guess: {guess}");
+        if (devMode) { DevComment($"User's guess: {guess}", "WRITELINE"); } //DM
 
         while (!wordList.Contains(guess))
         {
             WarningComment("Invalid Guess");
-            // DevComment("Word does not exist in: valid-wordle-words.txt");
+            UserColor();
+            if (devMode) { DevComment("Word does not exist in: valid-wordle-words.txt", "WRITELINE"); } //DM
+            Console.Write("   ");
             guess = Console.ReadLine().ToLower();
         }
+
         while (guessesMade.Contains(guess))
         {
             WarningComment("You've already guessed that word!");
+            UserColor();
+            Console.Write("   ");
             guess = Console.ReadLine().ToLower();
         }
         Reset();
@@ -89,6 +107,13 @@ void Play(bool devMode)
         for (int i = 0; i < 5; i++)
         {
             guessArray[i] = guess[i].ToString();
+        }
+        if (devMode)
+        {
+            foreach (String g in guessesMade) //DM
+            {
+                DevComment("guessesMade:" + g, "WRITELINE");
+            }
         }
 
         // Count each letter in the word
@@ -159,6 +184,7 @@ void Play(bool devMode)
         }
 
         // Print out the guess with corresponding colors
+        Console.Write("   "); // Add spaces to sort of center
         for (int i = 0; i < 5; i++)
         {
             if (guessArray[i] == "Green")
@@ -187,7 +213,8 @@ void Play(bool devMode)
             break;
         }
 
-        // After each guess subtract one from attempts
+        // After each guess subtract one from attempts and print the virtual keyboard
+        PrintVirtualKeyBoard(vk, guess, guessArray);
         attempts--;
     }
     if (attempts == 0)
@@ -198,6 +225,15 @@ void Play(bool devMode)
 
 void Win(int tries)
 {
+    // Play Win Sound
+    if (OperatingSystem.IsWindows())
+    {
+        SoundPlayer bootSound = new SoundPlayer("audio\\win.wav");
+        bootSound.Load();
+        bootSound.Play();
+    }
+
+    Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine();
     if (tries == 1)
     {
@@ -209,15 +245,26 @@ void Win(int tries)
     }
     Console.ReadLine();
     Console.Clear();
+    Reset();
     Menu();
 }
 
 void Lose(String word)
 {
+    // Play Lose Sound
+    if (OperatingSystem.IsWindows())
+    {
+        SoundPlayer bootSound = new SoundPlayer("audio\\lose.wav");
+        bootSound.Load();
+        bootSound.Play();
+    }
+
+    Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine();
     Console.WriteLine($"You lost... The word was: {word}");
     Console.ReadLine();
     Console.Clear();
+    Reset();
     Menu();
 }
 
@@ -335,7 +382,6 @@ void WarningComment(String s)
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(s);
-    Console.ResetColor();
 }
 
 void TitleColor(String s, String writeType)
@@ -359,4 +405,90 @@ void TitleColor(String s, String writeType)
 void UserColor()
 {
     Console.ForegroundColor = ConsoleColor.Cyan;
+}
+
+
+// Virtual Keyboard thing
+Dictionary<char, string> VirtualKeyboardLetters()
+{
+    var keyboardLetters = new Dictionary<char, string>
+    {
+        { 'q', "none" },
+        { 'w', "none" },
+        { 'e', "none" },
+        { 'r', "none" },
+        { 't', "none" },
+        { 'y', "none" },
+        { 'u', "none" },
+        { 'i', "none" },
+        { 'o', "none" },
+        { 'p', "none" },
+        { 'a', "none" },
+        { 's', "none" },
+        { 'd', "none" },
+        { 'f', "none" },
+        { 'g', "none" },
+        { 'h', "none" },
+        { 'j', "none" },
+        { 'k', "none" },
+        { 'l', "none" },
+        { 'z', "none" },
+        { 'x', "none" },
+        { 'c', "none" },
+        { 'v', "none" },
+        { 'b', "none" },
+        { 'n', "none" },
+        { 'm', "none" },
+    };
+    return keyboardLetters;
+}
+
+
+void PrintVirtualKeyBoard(Dictionary<char, string> virtualKeyboardLetters, string guess, string[] guessArray)
+{   
+    // This sets the colors
+    foreach (KeyValuePair<char, string> letter in virtualKeyboardLetters)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            if (guess[i] == letter.Key) { virtualKeyboardLetters[guess[i]] = guessArray[i]; }
+        }
+    }
+
+    // This prints out the keyboard
+    Console.WriteLine("-----------");
+        foreach (KeyValuePair<char,string> letter in virtualKeyboardLetters)
+    {
+
+        if (letter.Key == 'a')
+        {
+            Console.Write("\n ");
+        }
+        if (letter.Key == 'z')
+        {
+            Console.Write("\n   ");
+        }
+
+        if (letter.Value == "Green")
+        {
+            Green($"{letter.Key}");
+        }
+        else if (letter.Value == "Gray")
+        {
+            Gray($"{letter.Key}");
+        }
+        else if (letter.Value == "Yellow")
+        {
+            Yellow($"{letter.Key}");
+        }
+        else if (letter.Value == "Repeat")
+        {
+            Gray($"{letter.Key}");
+        }
+        else
+        {
+            Console.Write(letter.Key);
+        }
+    }
+    Console.WriteLine("\n-----------");
 }
