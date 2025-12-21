@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.IO;
+using System.Media;
 
 Boot();
 Menu();
@@ -7,7 +8,7 @@ void Menu()
 {
     var devMode = false;
 
-    TitleColor("Douglas's Wordle v0.2");
+    TitleColor("Douglas's Wordle v0.3", "WRITELINE");
     Console.WriteLine();
     Console.WriteLine("0 -- Play");
     Console.WriteLine("1 -- DevMode");
@@ -223,18 +224,34 @@ void Lose(String word)
 
 void Exit()
 {
+    // Play Exit Sound
+    if (OperatingSystem.IsWindows())
+    {
+        SoundPlayer bootSound = new SoundPlayer("audio\\exit.wav");
+        bootSound.Load();
+        bootSound.Play();
+    }
+
     String message = "Goodbye!";
     foreach (char c in message)
     {
-        Console.Write(c);
+        TitleColor($"{c}", "WRITE");
         Thread.Sleep(50);
     }
-    Thread.Sleep(100);
+    Thread.Sleep(800);
     Environment.Exit(0);
 }
 
 void Boot()
-{
+{   
+    // Play Boot Sound
+    if (OperatingSystem.IsWindows())
+    {
+        SoundPlayer bootSound = new SoundPlayer("audio\\boot.wav");
+        bootSound.Load();
+        bootSound.Play();
+    }
+
     Console.BackgroundColor = ConsoleColor.Blue;
     Console.ForegroundColor = ConsoleColor.White;
     String message = "AugeAgora";
@@ -321,12 +338,22 @@ void WarningComment(String s)
     Console.ResetColor();
 }
 
-void TitleColor(String s)
+void TitleColor(String s, String writeType)
 {
-    Console.BackgroundColor = ConsoleColor.Blue;
-    Console.ForegroundColor = ConsoleColor.White;
-    Console.WriteLine(s);
-    Console.ResetColor();
+    if (writeType == "WRITELINE")
+    {
+        Console.BackgroundColor = ConsoleColor.Blue;
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine(s);
+        Console.ResetColor();
+    }
+    else if (writeType == "WRITE")
+    {
+        Console.BackgroundColor = ConsoleColor.Blue;
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.Write(s);
+        Console.ResetColor();
+    }
 }
 
 void UserColor()
